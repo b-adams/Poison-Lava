@@ -6,6 +6,14 @@
 - Typo - The Icon Key you give is for the dynamic, rather than static, board.
 - Note: While checking game over - "emergency catch" shouldn't be necessary but actually would have been handy in detecting a misplaced return value.
 
+# Board setup #
+* Player Location is intended to be in the 0-63 range, indicating the player's offset from the start of the array (index register), rather than the player's offset from the start of all memory.
+
+# Game over: #
+* Make sure all local variables have trace tags - look for blue warnings (in other people's code, mentioning your labels) when assembling
+* Does not detect when lives have become <= 0, instead checks if address of lives is <=0
+* Does not detect when edibles have become <= 0 , instead checks if address of lives is <=0
+* Return value is overwriting part of the program, rather than going in location on stack reserved for return value
 
 # Move player: #
 - The high byte of function [NPplMove]'s return address is getting mangled
