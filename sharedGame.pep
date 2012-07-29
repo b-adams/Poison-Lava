@@ -122,13 +122,88 @@ RET0
 ;Caitlins's strings and supporting subroutines
 
 ;;;;****;;;;****;;;;****;;;;****;;;;****;;;;****
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;SETUP
+.ascii "--------GM SETUP--------"
 
 ;Gillian's setup board function
 ;No arguments
 ;No return values
+;local variable
+loopcntr: .equate 0 ;local variable #2d
+loopsize: .equate 2 ;size of locals
+
 GMsetup: NOP0
+;set player's lives
+lda 1,i
+sta lives,d
+
+;set up the board
+subsp loopsize,i ;allocate #loopcntr
+ldx 0,i
+stx loopcntr,s
+
+;loop starts here
+FOR: NOP0
+cpx boardE,i
+brge endfor
+
+;start checking characters in the static board
+;if (char == "0")
+ldbytea static,x
+cpa stcsafe,i
+breq edblespc
+;elseif (char == "9")
+cpa stcpit,i
+breq lava
+;elseif (char == "S")
+cpa stcstart,i
+breq player
+;else
+br chngedbl
+
+;continuation of the loop
+forcont: NOP0
+ldx loopcntr,s ;make sure to put the loop counter back into the index register
+addx 1,i
+stx loopcntr,s
+br FOR
+
+endfor: NOP0
+addsp loopsize,i ;deallocate #loopcntr
 RET0
+
 ;Gillian's strings and supporting subroutines
+
+;edible case
+edblespc: NOP0
+ldbytea dynsafe,i
+stbytea dynamic,x
+lda edible,d
+adda 1,i
+sta edible,d
+br forcont
+
+;shifting edible case
+chngedbl:NOP0
+stbytea dynamic,x
+lda edible,d
+adda 1,i
+sta edible,d
+br forcont
+
+;Poison lava case
+lava:NOP0
+ldbytea dynpit,i
+stbytea dynamic,x
+br forcont
+
+;player start case
+player:NOP0
+ldbytea dynplrLG,i
+stbytea dynamic,x
+;store the player's location (using the loop counter as the location)
+stx playLoc,d
+br forcont
 
 ;;;;****;;;;****;;;;****;;;;****;;;;****;;;;****
 .end
