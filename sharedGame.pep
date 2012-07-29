@@ -81,22 +81,38 @@ RET0
 ;Jamie's strings and supporting subroutines
 
 ;;;;****;;;;****;;;;****;;;;****;;;;****;;;;****
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;ISOVER
+.ascii "--------AMISOVER--------"
 
 ;Aly's Game Over function
 ;No arguments
 ;One return value
 AMgmStat: .equate -2 ;fill in as appropriate return value name  (for use by caller)
-AMresult: .equate 2 ;fill in as appropriate parameter (for use by AMisOver)
+AMresult: .equate 2 ;local variable #2d
 AMjudge: .equate 2 ;size to push/pop (for use by caller)
 
 AMisOver: NOP0
 ;use lives and edible count to check for game over.
-;if lives < 0, game over and player lose
-;else if edible ==/< 0, game over and player win
+;if lives <= 0, game over and player lose
+;else if edible > 0, game over and player win
 ;else game not over
- 
-RET0
-;Aly's strings and supporting subroutines
+lda lives,d
+brle LosRes ;checking lives...
+lda edible,d
+brle WinRes ;checking edible count...
+br AllElse ;neither skipped, so game not over yet
+LosRes: nop0 ;load player loss result and store it in AMresult, return
+lda plrLose,i
+sta AMresult,s
+br Done
+WinRes: nop0 ;load player win result and store it in AMresult, return
+lda plrWins,i
+sta AMresult,s
+br Done
+AllElse: nop0 ;load game not over result and store it in AMresult, return
+lda gameNovr,i
+sta AMresult,s
+Done: RET0
 
 ;;;;****;;;;****;;;;****;;;;****;;;;****;;;;****
 
