@@ -60,6 +60,8 @@ lives: .block 2 ;lives counter #2d - when zero, player should be dead
 playLoc: .block 2 ;location (offset in board array) of player #2d
 
 ;;;;****;;;;****;;;;****;;;;****;;;;****;;;;****
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;MAIN
+.ascii "--------BA  MAIN--------"
 
 BAmain: NOP0
 STRO BAwelcm,d
@@ -67,8 +69,8 @@ CALL JLshell,i
 STRO BAgdbye,d
 STOP
 ;;Strings for main
-BAwelcm: .ascii "Welcome to the CS225 Poison/Lava game."
-BAgdbye: .ascii "Thank you for playing the CS225 Poison/Lava game."
+BAwelcm: .ascii "Welcome to the CS225 Poison/Lava game.\x00"
+BAgdbye: .ascii "Thank you for playing the CS225 Poison/Lava game.\x00"
 
 ;;;;****;;;;****;;;;****;;;;****;;;;****;;;;****
 
