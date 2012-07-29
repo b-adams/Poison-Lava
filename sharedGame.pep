@@ -105,17 +105,19 @@ RET0
 ;Neale's move player function
 ;One lower-case wasd (char) argument
 ;No return value
-NPconvrt: .equate 0 ;local variable #1c
-NPsize: .equate 1
-NPparam: .equate 3 ;formal parameter #1c
+NPconvrt: .equate 2 ;local variable #2d
+NPmax: .equate 0 ;local variable #2d
+NPsize: .equate 4
+NPparam: .equate 6 ;formal parameter #1c
 NPplMove: .equate -1 ;callers view of argument
 NPargz: .equate 1 ;size to push/pop
 
 NPmove: NOP0
-SUBSP NPsize,i ;allocate #NPconvrt
+SUBSP NPsize,i ;allocate #NPconvrt #NPmax 
 ;---------------------------------------------------------------- Modify the player location based on the input
 ;Case w
-LDA NPparam,s
+LDA 0,i
+LDBYTEA NPparam,s
 CPA 'w',i
 BRNE NPnotW
 LDA playLoc,d
@@ -125,7 +127,8 @@ BR NPover
 
 ;Case a
 NPnotW: NOP0
-LDA NPparam,s
+LDA 0,i
+LDBYTEA NPparam,s
 CPA 'a',i
 BRNE NPnotA
 LDA playLoc,d
@@ -135,7 +138,8 @@ BR NPover
 
 ;Case s
 NPnotA: NOP0
-LDA NPparam,s
+LDA 0,i
+LDBYTEA NPparam,s
 CPA 's',i
 BRNE NPnotS
 LDA playLoc,d
@@ -145,6 +149,7 @@ BR NPover
 
 ;Case d
 NPnotS: NOP0
+LDA 0,i
 LDA playLoc,d
 ADDA 1,i
 STA NPconvrt,s
@@ -152,22 +157,26 @@ STA NPconvrt,s
 ;---------------------------------------------------------------- Check to see if it's out of bounds
 NPover:NOP0
 ;check to see if it's less than 0 or greater than boardE
+LDA boardE,i
+SUBA 1,i
+STA NPmax,s
+
 LDA NPconvrt,s
 BRLT NPtop
 
-CPA boardE,i
+CPA NPmax,s
 BRGT NPbottom
 BR NPover2
 
 NPtop: NOP0
 LDA NPconvrt,s
-SUBA boardE,i
+ADDA boardE,i
 STA NPconvrt,s
 BR NPover2
 
 NPbottom: NOP0
 LDA NPconvrt,s
-ADDA boardE,i
+SUBA boardE,i
 STA NPconvrt,s
 
 ;---------------------------------------------------------------- Change the new location's thingy
@@ -182,10 +191,11 @@ BRNE NPnoSafe
 ;subtract edible counter
 LDA edible,d
 SUBA 1,i
+STA edible,d
 ;change the new location
 ;if the character is a c make it a C and so on
 LDA 0,i
-LDX playLoc,i
+LDX playLoc,d
 LDBYTEA dynamic,x
 CPA dynplrSM,i
 BRNE NPbigC
@@ -209,6 +219,7 @@ LDBYTEA dyndead,i
 STBYTEA dynamic,x
 LDA lives,d
 SUBA 1,i
+STA lives,d
 
 NPover3: NOP0
 LDX playLoc,d
@@ -216,7 +227,10 @@ LDA 0,i
 LDBYTEA dynclear,i
 STBYTEA dynamic,x
 
-ADDSP NPsize,i ;DEallocate #NPconvrt
+LDA NPconvrt,s
+STA playLoc,d
+
+ADDSP NPsize,i ;DEallocate #NPmax #NPconvrt 
 RET0
 ;Neale's strings and supporting subroutines
 
