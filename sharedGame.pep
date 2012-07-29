@@ -113,11 +113,13 @@ RET0
 ;Neale's strings and supporting subroutines
 
 ;;;;****;;;;****;;;;****;;;;****;;;;****;;;;****
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;UPDATE
+.ascii "--------CSUPDATE--------"
 
 ;Caitlin's board update function
 ;No arguments
 ;No return values
-CSupdate: NOP0 
+CSupdate: NOP0
 RET0
 ;Caitlins's strings and supporting subroutines
 
