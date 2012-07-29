@@ -182,9 +182,15 @@ STA NPconvrt,s
 ;---------------------------------------------------------------- Change the new location's thingy
 NPover2: NOP0
 
-;if the new location is edible be appropriate
+;if the new location is all ready eaten just move
 LDA 0,i
 LDX NPconvrt,s
+LDBYTEA dynamic,x
+CPA dynclear,i
+BREQ NPisSafe
+
+;if the new location is ediable, eat it then move
+LDA 0,i
 LDBYTEA dynamic,x
 CPA dynsafe,i
 BRNE NPnoSafe
@@ -192,8 +198,9 @@ BRNE NPnoSafe
 LDA edible,d
 SUBA 1,i
 STA edible,d
-;change the new location
+
 ;if the character is a c make it a C and so on
+NPisSafe:NOP0
 LDA 0,i
 LDX playLoc,d
 LDBYTEA dynamic,x
@@ -212,6 +219,7 @@ LDBYTEA dynplrSM,i
 STBYTEA dynamic,x
 BR NPover3
 
+;if the new location isn't safe kill the player
 NPnoSafe: NOP0
 LDA 0,i
 LDX NPconvrt,s
@@ -221,6 +229,7 @@ LDA lives,d
 SUBA 1,i
 STA lives,d
 
+;save the new location
 NPover3: NOP0
 LDX playLoc,d
 LDA 0,i
