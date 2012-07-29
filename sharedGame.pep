@@ -110,11 +110,11 @@ RET0
 ;Jamie's strings and supporting subroutines
 JLmenu: .ASCII "\n*********************************\n**       M A I N M E N U       **\n*********************************\n**                             **\n**   [1] Play Current Board    **\n**   [2] View Current Board    **\n**   [3] Enter New Board       **\n**   [4] Exit                  **\n**                             **\n*********************************\nTYPE YOUR SELECTION AND PRESS ENTER: \x00"
 JLrules: .ASCII "Move your guy using A (left), D (right),\nW (up), and S (down). NOT case sensitive.\nIcon Key:\n* = nom (You can eat this!)\n. = empty (You already ate here!)\n# = lava pit (Go there, you die!)\ninteger = poison (after each move the\nnumber goes down by one, it's safe for one\nturn after it counts down from 1)\n\x00"
-JLkey: .ASCII "\nIcon Key:\n* = nom (You can eat this!)\n. = empty (You already ate here!)\n# = lava pit (Go there, you die!)\ninteger = poison (after each move the\nnumber goes down by one, it's safe for one\nturn after it counts down from 1)\n\x00"
+JLkey: .ASCII "\nIcon Key:\n0 = nom (You can eat this!)\nS = player starting location\n9 = lava pit (Go there, you die!)\ninteger = poison (after each move the\nnumber goes down by one, it's safe for one\nturn after it counts down from 1)\n\x00"
 JLuwin: .ASCII "\n**************************\n**  G A M E  O V E R !  **\n**************************\n**                      **\n**       You WIN!       **\n**                      **\n**************************\nNumber of Round: \x00"
-JLulose: .ASCII "\n**************************\n**  G A M E  O V E R !  **\n**************************\n**                      **\n**       You LOSE!       **\n**                      **\n**************************\n\x00"
+JLulose: .ASCII "\n**************************\n**  G A M E  O V E R !  **\n**************************\n**                      **\n**       You LOSE!      **\n**                      **\n**************************\n\x00"
 JLcurr: .ASCII "\n*****************************\n**  View of Current Board  **\n*****************************\n\n\x00"
-JLnwrule: .ASCII "\nEnter 64 total characters that will be\ntranslated into 8 rows of 8 characters.\nA * is an edible. A # is a permanent\nlava pit. A single integer from 1-9 counts\ndown one number per move. It's poison while\nit's a number, and it's edible for one turn\nafter it counts down from 1.\n\x00"
+JLnwrule: .ASCII "\nEnter 64 total characters that will be\ntranslated into 8 rows of 8 characters.\nAll 'illegal' characters will be ignored\nso feel free to put line feeds into the\nbatch input.\nA '0' is an edible. A '9' is a permanent\nlava pit. A single integer from 1-8 counts\ndown one number per move. It's poison while\nit's a number, and it's edible for one turn\nafter it counts down from 1.An upper case\n'S' is the player's starting location.\n\x00"
 JLloctns: .ADDRSS JLdeflt ;Jump table
 .ADDRSS JLone
 .ADDRSS JLtwo
@@ -128,6 +128,7 @@ SUBSP JLcrfram,i ;allocate #JLround
 LDA 0,i
 STA JLround,s ;set round number to 0
 CALL GMsetup ;initialize a new board
+STRO JLrules,d
 JLgoplay: NOP0 ;prepare to call JLplay
 MOVSPA ;put address of SP into A
 ADDSP JLround,i ;now A contains the memory address of JLround. adding 0 is unnecessary but it will make life easier if the program is expanded in the future
@@ -219,6 +220,7 @@ ADDX 1,i
 CPX boardW,i
 BRGE JLlnfeed ;after every boardWth character a linefeed is inserted
 STX JLvwcnt2,s
+BR JLvwloop
 JLvwbye: NOP0
 STRO JLkey,d
 ADDSP JLvwfram,i ;deallocate #JLvwcnt1 #JLvwcnt2
@@ -226,16 +228,26 @@ RET0
 
 JLnewbrd: NOP0
 JLnwcntr: .equate 0 ;local variable #2d
-JLnwfram: .equate 2 ;frame size for JLnewbrd's local variable(s)
-SUBSP JLnwfram,i ;allocate #JLnwcntr
+JLnwhold: .equate 2 ;local variable #2d
+JLnwfram: .equate 4 ;frame size for JLnewbrd's local variable(s)
+SUBSP JLnwfram,i ;allocate #JLnwhold #JLnwcntr
 LDX 0,i
+LDA 0,i ;accumulator must be cleared for purposes of testing individual characters
 STX JLnwcntr,s ;zero the counter
 STRO JLnwrule,d ;output the instructions
-JLnwget: CHARI static,x ;get the characters
+JLnwget: CHARI JLnwhold,s
+LDBYTEA JLnwhold,s ;loads the inputted character into the accumulator
+CPA 'S',i ;check if the inputted character is S
+BREQ JLnwgood ;the input is good so keep it
+CPA '0',i
+BRLT JLnwget ;the input is not an S but is less than zero so it's no good, ignore it
+CPA '9',i
+BRGT JLnwget ;the input is not an S and is greater than 0 but it's also greater than 9 so it's no good, ignore it
+JLnwgood: STBYTEA static,x ;this line is branched to if input is S. if input is not S but is >=0 and <=9 the program will just "fall through" to this line
 ADDX 1,i
 CPX boardE,i ;loops stops running after inputting the boardEth character
-BRLT JLnwget
-ADDSP JLnwfram,i ;deallocate #JLnwcntr
+BRLT JLnwget 
+ADDSP JLnwfram,i ;deallocate #JLnwcntr #JLnwhold
 RET0
 
 ;;;;****;;;;****;;;;****;;;;****;;;;****;;;;****
