@@ -99,16 +99,124 @@ RET0
 ;Aly's strings and supporting subroutines
 
 ;;;;****;;;;****;;;;****;;;;****;;;;****;;;;****
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;MOVE
+.ascii "--------NP  MOVE--------"
 
 ;Neale's move player function
 ;One lower-case wasd (char) argument
 ;No return value
-;Caution: No compare byte instruction - clear upper byte for character testing
+NPconvrt: .equate 0 ;local variable #1c
+NPsize: .equate 1
+NPparam: .equate 3 ;formal parameter #1c
+NPplMove: .equate -1 ;callers view of argument
+NPargz: .equate 1 ;size to push/pop
 
-NPplMove: .equate 999 ;fill in argument (caller's view)
-NPparam: .equate 999 ;fill in parameter (NPmove's view)
-NPargz: .equate 999 ;fill in size to push/pop (for use by caller)
 NPmove: NOP0
+SUBSP NPsize,i ;allocate #NPconvrt
+;---------------------------------------------------------------- Modify the player location based on the input
+;Case w
+LDA NPparam,s
+CPA 'w',i
+BRNE NPnotW
+LDA playLoc,d
+SUBA boardW,i
+STA NPconvrt,s
+BR NPover
+
+;Case a
+NPnotW: NOP0
+LDA NPparam,s
+CPA 'a',i
+BRNE NPnotA
+LDA playLoc,d
+SUBA 1,i
+STA NPconvrt,s
+BR NPover
+
+;Case s
+NPnotA: NOP0
+LDA NPparam,s
+CPA 's',i
+BRNE NPnotS
+LDA playLoc,d
+ADDA boardW,i
+STA NPconvrt,s
+BR NPover
+
+;Case d
+NPnotS: NOP0
+LDA playLoc,d
+ADDA 1,i
+STA NPconvrt,s
+
+;---------------------------------------------------------------- Check to see if it's out of bounds
+NPover:NOP0
+;check to see if it's less than 0 or greater than boardE
+LDA NPconvrt,s
+BRLT NPtop
+
+CPA boardE,i
+BRGT NPbottom
+BR NPover2
+
+NPtop: NOP0
+LDA NPconvrt,s
+SUBA boardE,i
+STA NPconvrt,s
+BR NPover2
+
+NPbottom: NOP0
+LDA NPconvrt,s
+ADDA boardE,i
+STA NPconvrt,s
+
+;---------------------------------------------------------------- Change the new location's thingy
+NPover2: NOP0
+
+;if the new location is edible be appropriate
+LDA 0,i
+LDX NPconvrt,s
+LDBYTEA dynamic,x
+CPA dynsafe,i
+BRNE NPnoSafe
+;subtract edible counter
+LDA edible,d
+SUBA 1,i
+;change the new location
+;if the character is a c make it a C and so on
+LDA 0,i
+LDX playLoc,i
+LDBYTEA dynamic,x
+CPA dynplrSM,i
+BRNE NPbigC
+LDA 0,i
+LDX NPconvrt,s
+LDBYTEA dynplrLG,i
+STBYTEA dynamic,x
+BR NPover3
+
+NPbigC:NOP0
+LDA 0,i
+LDX NPconvrt,s
+LDBYTEA dynplrSM,i
+STBYTEA dynamic,x
+BR NPover3
+
+NPnoSafe: NOP0
+LDA 0,i
+LDX NPconvrt,s
+LDBYTEA dyndead,i
+STBYTEA dynamic,x
+LDA lives,d
+SUBA 1,i
+
+NPover3: NOP0
+LDX playLoc,d
+LDA 0,i
+LDBYTEA dynclear,i
+STBYTEA dynamic,x
+
+ADDSP NPsize,i ;DEallocate #NPconvrt
 RET0
 ;Neale's strings and supporting subroutines
 
