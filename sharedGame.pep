@@ -120,8 +120,65 @@ RET0
 ;No arguments
 ;No return values
 CSupdate: NOP0
+
+runtot: .equate 0;local variable #2d 
+;create a runtime variable to denote which element of the dynamic board on 
+CSframe:.equate 2;framesize for local variables for CSupdate
+;for (i=0; i<64; i ++)
+LDA 0,i;getting ready to zero out running total
+STA runtot,s;runtot = 0
+;
+SUBSP CSframe,i
+CALL start
+ADDSP CSframe,i
 RET0
-;Caitlins's strings and supporting subroutines
+;
+start: NOP0 ;start of comparison loop
+LDA 0,i;zero out accumulator
+LDX runtot,s;loads running total to x index
+
+LDBYTEA dynamic,x;
+
+CPA '*',i ;if(accumulator==dynpit) 
+BREQ always,i ;do nothing, pits stay pits
+CPA '.',i ;else if(accumulator==dynclear) 
+BREQ doNoth,i ;do nothing, eaten spots stay eaten
+CPA 'c',i ;else if(accumulator==dynplrSM) {
+BREQ doNoth,i ;do nothing, changing the player is Neale's job
+CPA 'C',i ;else if(accumulator==dynplrLG) {
+BREQ doNoth,i ;do nothing, changing the player is Neale's job
+CPA 'X',i ;else if(accumulator==dyndead) {
+BREQ doNoth,i ;do nothing, dead players don't decompose
+;*************************
+always: NOP0 ; else if(accumulator==dynsafe) {
+LDA static,x;//Need to know if this is an always-* or a sometimes-* accumulator=static[runtot]
+CPA 0,i
+BREQ doNoth,i ;if(accumulator==stcsafe)    //do nothing, 0 on the static board is always * on dynamic
+STBYTEA dynamic,x;} else {reset the * on dynamic board to the static number, dynamic[runtot] = accumulator
+RET0  
+;***************************************
+LDBYTEA dynamic,x;the only option left is there's a number to decrement
+SUBA 1,i; accumulator--
+CPA 0,i; if(accumulator==stcsafe){ 
+BREQ putstar,i  ;We decremented from a 1 to a 0, so need a * on the board accumulator=dynsafe
+STBYTEA dyanamic,x; } else {
+BR doNoth,i ;//we decremented something that didn't become a 0, so that will be used
+;
+putstar: NOP0
+LDBYTEA '*',i
+STBYTEA dynamic,x;Put the updated symbol on the board
+doNoth: NOP0
+LDA runtot,s;
+;
+CPA 64,i
+BREQ end,i
+ADDA 1,i; running total ++
+STA runtot,s
+BR start,i
+;
+end: NOP0
+RET0
+;
 
 ;;;;****;;;;****;;;;****;;;;****;;;;****;;;;****
 
