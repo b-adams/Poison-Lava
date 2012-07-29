@@ -1,4 +1,4 @@
-;Constants 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;Constants
 boardL: .equate 8  ;board length
 boardW: .equate 8  ;board width
 boardE: .equate 64 ;number of elements
@@ -7,6 +7,7 @@ gameNovr: .equate 42 ;Aly return code: Game not over
 plrWins: .equate 12  ;Aly return code: Game over, Player Wins
 plrLose: .equate 6   ;Aly return code: Game over, Player Loses
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;Jump to program and alignment bytes
 BR BAmain
 NOP0 ;memory spacer
 NOP0 ;memory spacer
@@ -14,50 +15,58 @@ NOP0 ;memory spacer
 NOP0 ;memory spacer
 NOP0 ;memory spacer
 
-;dynamic board
-dynamic: .block 64 ;must match boardE // Dynamic board - one long line 'dynamic'
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;Dynamic Board
+.ascii "V board "
+dynamic: .block 64 ;must match boardE // Dynamic board - one long line 'dynamic' #1c64a
+
 ; Can replace with following to test alignment
-;.ascii "c*123456" 
-;.ascii "#####*87"
+;.ascii "c*123456"
+;.ascii "#####987"
 ;.ascii "****#*##"
 ;.ascii "*##*#*#*"
 ;.ascii "*#**#*#*"
 ;.ascii "*#**#*#*"
 ;.ascii "*####*#*"
 ;.ascii "****6*6*"
-dynplrSM: .equate "c" 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;Dynamic Board Visuals
+dynplrSM: .equate "c"
 dynplrLG: .equate "C"
-dyndead:  .equate "X" 
+dyndead:  .equate "X"
 dynclear: .equate "."
 dynsafe:  .equate "*"
 dynpit:   .equate "#"
-;1-8 mean "1-8 roudns until safe"
+;1-8 mean "1-8 rounds until safe"
 ;* means "safe (at least for next move)"
 
-;;static board
-static: .block 64 ;must also match boardE // Static board - one long line 'static'
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;Static Board
+.ascii "V  map  "
+;static: .block 64 ;must also match boardE // Static board - one long line 'static' #1c64a
 ; Can replace with following for a 'default board'
-;.ascii "S0123456" 
-;.ascii "99999087"
-;.ascii "00009099"
-;.ascii "09909090"
-;.ascii "09009090"
-;.ascii "09009090"
-;.ascii "09999090"
-;.ascii "00006060"
+static: .ascii "90123456"
+.ascii "99999087"
+.ascii "00009099"
+.ascii "09909090"
+.ascii "09009090"
+.ascii "09009090"
+.ascii "09999090"
+.ascii "0000606S"
 
-stcstart: .equate "S" 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;Static Board Visuals
+stcstart: .equate "S"
 stcsafe:  .equate "0"
-stcpit:   .equate "9" 
+stcpit: .equate "9"
 ;0 means "always safe"
 ;9 means "always deadly"
 ;1-8 mean "1-8 rounds deadly, 1 round safe"
 
-
-;Tracking variables
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;Global Variables
+.ascii "V  data "
 edible: .block 2 ;edible counter #2d (includes variable hazards)
 lives: .block 2 ;lives counter #2d - when zero, player should be dead
 playLoc: .block 2 ;location (offset in board array) of player #2d
+NOP0 ;spacer
+NOP0 ;spacer
 
 ;;;;****;;;;****;;;;****;;;;****;;;;****;;;;****
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;MAIN
